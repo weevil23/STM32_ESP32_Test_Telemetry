@@ -1,1 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='UTF-8'>
+  <title>ESP32 Telemetry</title>
+  <style>
+    body { background:#111; color:#0f0; font-family: monospace; padding: 20px; }
+    .row { display: flex; align-items: center; margin: 8px 0; gap: 10px; }
+    .label { width: 90px; color:#0ff; font-weight: bold; }
+    .value { width: 70px; text-align: right; color: #fff; }
+    .bar-container { width: 300px; background: #222; height:  20px; position: relative; }
+    .bar { background: #0f0; height: 100%; width: 0%; transition: width 0.2s; }
+    .info { color: #ccc; margin-top: 20px; line-height: 1.4em; }
+    .command { margin-top: 30px; }
+    input[type="text"] { padding: 5px; font-size: 1em; width: 300px; }
+    button { padding: 5px 10px; font-size: 1em; margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <h2>ESP32 ↔ STM32 Telemetry Dashboard</h2>
+  <div class="info">
+    <b>PA Temp:</b> T(°C) = 0.061035 × ADC − 32.23<br>
+    <b>FWD/REF:</b> Power (W) = 0.1130 × ADC<br>
+    <b>PA (A):</b> A = ADC / 3.3052<br>
+    <b>ODRIVE:</b> PEP (W) = 0.0008372 × ADC
+  </div>
 
+  <div id="fields"></div>
+
+  <div class="command">
+    <label for="cmd">COMMAND:</label>
+    <input id="cmd" type="text" placeholder="e.g. f1,75 or B,1">
+    <button onclick="sendCommand()">Send</button>
+  </div>
+
+  <script>
+    const labels = ["FWD (W)", "REF (W)", "VSWR", "ODRIVE (Wpep)", "PA (V)", "PA (A)", "PA TEMP", "PREAMP V", "PSUTEMP"];
+    const maxValues = [600, 600, 10, 10, 100, 25, 100, 100, 100];
+
+    const fields = document.getElementById("fields");
+    labels.forEach((label, i) => {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `
+        <div class="label">${label}</div>
+        <div class="value" id="val${i}">---</div>
+        <div class="bar-container">
+          <div class="bar" id="bar${i}"></div>
+        </div>`;
+      fields.appendChild(row);
+    });
+
+    let ws;
+    function connectWS() {
+      ws = new WebSocket("wss://ws.dxshop.uk");
+
+      ws.onopen = () => console.log("✅ WebSocket connected");
+
+      ws.onmessage = (e) => {
+        const parts = e.data.trim().split(',');
+        if (parts.length >= 9) {
+          for (let i = 0; i < 9; i++) {
+            const val = parseFloat(parts[i]);
+            document.getElementById(`val${i}`).textContent = val.toFixed(1);
+            const bar = document.getElementById(`bar${i}`);
+            const pct = Math.min(100, (val / maxValues[i]) * 100);
+            bar.style.width = pct + "%";
+          }
+        }
+      };
+
+      ws.onclose = () => {
+        console.warn("WebSocket closed. Reconnecting...");
+        setTimeout(connectWS, 2000);
+      };
+    }
+
+    connectWS();
+
+    function sendCommand() {
+      const cmd = document.getElementById("cmd").value.trim();
+      if (cmd && ws.readyState === WebSocket.OPEN) {
+        ws.send(cmd);
+        console.log("📤 Sent:", cmd);
+        document.getElementById("cmd").value = "";
+      }
+    }
+  </script>
+</body>
+</html>
+)rawliteral";
