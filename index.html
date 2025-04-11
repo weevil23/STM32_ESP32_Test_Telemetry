@@ -18,10 +18,6 @@
 </head>
 <body>
 <h2>ESP32 Telemetry Dashboard</h2>
-
-<div id="fields">
-  <p style="color:#0f0;">Waiting for live telemetry data...</p>
-</div>
   <div class="info">
     <b>PA Temp:</b> T(°C) = 0.061035 × ADC − 32.23<br>
     <b>FWD/REF:</b> Power (W) = 0.1130 × ADC<br>
@@ -56,7 +52,7 @@ labels.forEach((label, i) => {
 
 let ws;
 function connectWS() {
-  ws = new WebSocket("wss://ws.dxshop.uk");
+  ws = new WebSocket("wss://ws.thedxshop.uk");
 
   ws.onopen = () => console.log("✅ WebSocket connected");
 
