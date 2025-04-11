@@ -8,7 +8,7 @@
     .row { display: flex; align-items: center; margin: 8px 0; gap: 10px; }
     .label { width: 90px; color:#0ff; font-weight: bold; }
     .value { width: 70px; text-align: right; color: #fff; }
-    .bar-container { width: 300px; background: #222; height:  20px; position: relative; }
+    .bar-container { width: 300px; background: #222; height: 20px; position: relative; }
     .bar { background: #0f0; height: 100%; width: 0%; transition: width 0.2s; }
     .info { color: #ccc; margin-top: 20px; line-height: 1.4em; }
     .command { margin-top: 30px; }
@@ -33,59 +33,59 @@
     <button onclick="sendCommand()">Send</button>
   </div>
 
-  <script>
-    const labels = ["FWD (W)", "REF (W)", "VSWR", "ODRIVE (Wpep)", "PA (V)", "PA (A)", "PA TEMP", "PREAMP V", "PSUTEMP"];
-    const maxValues = [600, 600, 10, 10, 100, 25, 100, 100, 100];
+<script>
+const labels = ["FWD (W)", "REF (W)", "VSWR", "ODRIVE (Wpep)", "PA (V)", "PA (A)", "PA TEMP", "PREAMP V", "PSUTEMP"];
+const maxValues = [600, 600, 10, 10, 100, 25, 100, 100, 100];
 
-    const fields = document.getElementById("fields");
-    labels.forEach((label, i) => {
-      const row = document.createElement("div");
-      row.className = "row";
-      row.innerHTML = `
-        <div class="label">${label}</div>
-        <div class="value" id="val${i}">---</div>
-        <div class="bar-container">
-          <div class="bar" id="bar${i}"></div>
-        </div>`;
-      fields.appendChild(row);
-    });
+const fields = document.getElementById("fields");
+labels.forEach((label, i) => {
+  const row = document.createElement("div");
+  row.className = "row";
+  row.innerHTML = `
+    <div class="label">${label}</div>
+    <div class="value" id="val${i}">---</div>
+    <div class="bar-container">
+      <div class="bar" id="bar${i}"></div>
+    </div>`;
+  fields.appendChild(row);
+});
 
-    let ws;
-    function connectWS() {
-      ws = new WebSocket("wss://ws.dxshop.uk");
+let ws;
+function connectWS() {
+  ws = new WebSocket("wss://ws.dxshop.uk");
 
-      ws.onopen = () => console.log("✅ WebSocket connected");
+  ws.onopen = () => console.log("✅ WebSocket connected");
 
-      ws.onmessage = (e) => {
-        const parts = e.data.trim().split(',');
-        if (parts.length >= 9) {
-          for (let i = 0; i < 9; i++) {
-            const val = parseFloat(parts[i]);
-            document.getElementById(`val${i}`).textContent = val.toFixed(1);
-            const bar = document.getElementById(`bar${i}`);
-            const pct = Math.min(100, (val / maxValues[i]) * 100);
-            bar.style.width = pct + "%";
-          }
-        }
-      };
-
-      ws.onclose = () => {
-        console.warn("WebSocket closed. Reconnecting...");
-        setTimeout(connectWS, 2000);
-      };
-    }
-
-    connectWS();
-
-    function sendCommand() {
-      const cmd = document.getElementById("cmd").value.trim();
-      if (cmd && ws.readyState === WebSocket.OPEN) {
-        ws.send(cmd);
-        console.log("📤 Sent:", cmd);
-        document.getElementById("cmd").value = "";
+  ws.onmessage = (e) => {
+    const parts = e.data.trim().split(',');
+    if (parts.length >= 9) {
+      for (let i = 0; i < 9; i++) {
+        const val = parseFloat(parts[i]);
+        document.getElementById(`val${i}`).textContent = val.toFixed(1);
+        const bar = document.getElementById(`bar${i}`);
+        const pct = Math.min(100, (val / maxValues[i]) * 100);
+        bar.style.width = pct + "%";
       }
     }
-  </script>
+  };
+
+  ws.onclose = () => {
+    console.warn("WebSocket closed. Reconnecting...");
+    setTimeout(connectWS, 2000);
+  };
+}
+
+connectWS();
+
+function sendCommand() {
+  const cmd = document.getElementById("cmd").value.trim();
+  if (cmd && ws.readyState === WebSocket.OPEN) {
+    ws.send(cmd);
+    console.log("📤 Sent:", cmd);
+    document.getElementById("cmd").value = "";
+  }
+}
+</script>
+
 </body>
 </html>
-)rawliteral";
