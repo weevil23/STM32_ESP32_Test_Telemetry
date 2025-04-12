@@ -19,10 +19,11 @@
 <body>
 <h2>STM32 ↔ ESP32 ↔ PiZeroW Telemetry Dashboard</h2>
   <div class="info">
-    <b>PA Temp:</b> (°C) = 0.061035 × ADC − 32.23<br>
+    
     <b>FWD/REF:</b> Power (W) = 0.1130 × ADC<br>
-    <b>PA (A):</b> = ADC / 3.3052<br>
     <b>ODRIVE:</b> PEP (W) = 0.0008372 × ADC<br>
+    <b>PA (A):</b> = ADC / 3.3052<br>
+    <b>PA Temp:</b> (°C) = 0.061035 × ADC − 32.23 smoothed 60<br>
     <b>PREAMP (V):</b> = Read / 10<br>
     <b>PSUTEMP(°C):</b> = Read / 10<br>
   </div>
